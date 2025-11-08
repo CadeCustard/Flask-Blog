@@ -8,13 +8,11 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
 DB_PATH = os.path.join(app.root_path, 'database.db')
 
-
 def get_db_connection():
     """Return a sqlite3 connection with Row factory."""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
-
 
 def init_db():
     """Create the posts table if it doesn't exist (simple onboarding for this casual project)."""
@@ -32,7 +30,6 @@ def init_db():
         )
     conn.close()
 
-
 def get_post(post_id):
     """Fetch a post by id or abort 404."""
     conn = get_db_connection()
@@ -43,20 +40,16 @@ def get_post(post_id):
     # Convert Row to dict so templates can use post['id'] etc.
     return dict(post)
 
-
 # Small helper filter used by templates: convert newlines to <br> safely.
 def nl2br(value):
     return Markup(escape(value).replace('\n', Markup('<br>\n')))
 
-
 app.jinja_env.filters['nl2br'] = nl2br
-
 
 @app.before_first_request
 def setup():
     # Create DB/table automatically on first run so the app just works.
     init_db()
-
 
 @app.route('/', methods=['GET'])
 def index():
@@ -77,12 +70,10 @@ def index():
     posts = [dict(r) for r in rows]
     return render_template('index.html', posts=posts, q=q)
 
-
 @app.route('/<int:post_id>')
 def post(post_id):
     post = get_post(post_id)
     return render_template('post.html', post=post)
-
 
 @app.route('/create', methods=('GET', 'POST'))
 def create():
@@ -112,7 +103,6 @@ def create():
 
     # GET
     return render_template('create.html')
-
 
 @app.route('/<int:post_id>/edit', methods=('GET', 'POST'))
 def edit(post_id):
@@ -144,7 +134,6 @@ def edit(post_id):
     # GET
     return render_template('edit.html', post=post)
 
-
 @app.route('/<int:post_id>/delete', methods=('POST',))
 def delete(post_id):
     post = get_post(post_id)
@@ -154,7 +143,6 @@ def delete(post_id):
     conn.close()
     flash(f"Post '{post['title']}' was successfully deleted.")
     return redirect(url_for('index'))
-
 
 if __name__ == '__main__':
     # Enable debug mode only when FLASK_DEBUG environment variable is set to "1".
